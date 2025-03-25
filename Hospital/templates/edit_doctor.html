@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Doctor - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button login-btn">Back to Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="edit-doctor-form">
+        <h1 class="text-center mb-4">Edit Doctor Information</h1>
+        
+        <form method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="name" class="form-label">Doctor Name</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ doctor.name }}" required>
+                <div class="invalid-feedback">
+                    Please enter the doctor's name.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="specialization" class="form-label">Specialization</label>
+                <input type="text" class="form-control" id="specialization" name="specialization" value="{{ doctor.specialization }}" required>
+                <div class="invalid-feedback">
+                    Please enter the doctor's specialization.
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Update Doctor Information</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

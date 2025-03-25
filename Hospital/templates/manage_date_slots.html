@@ -1,0 +1,339 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Date Slots - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button login-btn">Back to Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="manage-date-slots-form">
+        <h1 class="text-center mb-4">Manage Slots for {{ doctor.name }}</h1>
+        <p class="text-center text-muted mb-4">Set available time slots for {{ selected_date.strftime('%B %d, %Y') }}</p>
+        
+        <div class="calendar-nav mb-4">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <a href="{{ url_for('manage_date_slots', doctor_id=doctor.id, date=(selected_date - timedelta(days=1)).strftime('%Y-%m-%d')) }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-chevron-left"></i> Previous Day
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    <div class="date-picker">
+                        <input type="date" id="datePicker" class="form-control" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <a href="{{ url_for('manage_date_slots', doctor_id=doctor.id, date=(selected_date + timedelta(days=1)).strftime('%Y-%m-%d')) }}" class="btn btn-outline-primary w-100">
+                        Next Day <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+                <div class="col-md-3">
+                    {% if dates_with_slots %}
+                    <select id="previous-dates" class="form-select">
+                        <option value="">Configured Dates</option>
+                        {% for date in dates_with_slots %}
+                        <option value="{{ date.strftime('%Y-%m-%d') }}" {% if date == selected_date %}selected{% endif %}>
+                            {{ date.strftime('%B %d, %Y') }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <form method="POST" class="needs-validation" novalidate>
+            <!-- Hidden field to store the selected date -->
+            <input type="hidden" name="selected_date" value="{{ selected_date.strftime('%Y-%m-%d') }}">
+            
+            <div id="slots-container">
+                {% if slots %}
+                    {% for slot in slots %}
+                    <div class="slot-group mb-4">
+                        <div class="row">
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label">Start Time</label>
+                                    <input type="time" class="form-control slot-start-time" name="start_time[]" value="{{ slot.start_time }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label">End Time</label>
+                                    <input type="time" class="form-control slot-end-time" name="end_time[]" value="{{ slot.end_time }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="mb-3">
+                                    <label class="form-label">&nbsp;</label>
+                                    <button type="button" class="btn btn-danger w-100 remove-slot">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="slot-group mb-4">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label class="form-label">Start Time</label>
+                                <input type="time" class="form-control slot-start-time" name="start_time[]" required>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="mb-3">
+                                <label class="form-label">End Time</label>
+                                <input type="time" class="form-control slot-end-time" name="end_time[]" required>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button type="button" class="btn btn-danger w-100 remove-slot" style="display: none;">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex gap-2 mt-4">
+                <button type="button" class="btn btn-secondary" id="add-slot">
+                    <i class="fas fa-plus"></i> Add Another Slot
+                </button>
+                <button type="submit" class="btn btn-primary">Update Slots</button>
+            </div>
+        </form>
+
+        <div class="existing-slots mt-5">
+            <h3 class="mb-4">Current Slots for {{ selected_date.strftime('%B %d, %Y') }}</h3>
+            {% if slots %}
+            <div class="slots-grid">
+                {% for slot in slots %}
+                <div class="slot-card {% if not slot.is_available %}slot-full{% endif %}">
+                    <div class="slot-header">
+                        <h3>{{ slot.start_time }} - {{ slot.end_time }}</h3>
+                        <span class="badge {% if slot.appointments_count >= 10 %}bg-danger{% elif slot.appointments_count >= 7 %}bg-warning{% else %}bg-success{% endif %}">
+                            {{ slot.appointments_count }}/10 Booked
+                        </span>
+                    </div>
+                    <div class="slot-info">
+                        <p class="mb-0">Appointments: {{ slot.appointments_count }}/10</p>
+                        <p class="mb-0 {% if slot.is_available %}text-success{% else %}text-danger{% endif %}">
+                            {% if slot.is_available %}Available{% else %}Fully Booked{% endif %}
+                        </p>
+                        {% if slot.appointments %}
+                        <div class="appointments-list">
+                            <small>Booked by:</small>
+                            <ul class="list-unstyled">
+                                {% for appointment in slot.appointments %}
+                                <li>
+                                    {% if appointment.patient_name %}
+                                        {{ appointment.patient_name }}
+                                    {% else %}
+                                        {{ appointment.patient.username }}
+                                    {% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No slots configured for this date yet. Add slots above.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+.slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.slot-card {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.slot-card.slot-full {
+    background-color: #f8f9fa;
+    border-color: #dc3545;
+}
+
+.slot-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.slot-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.slot-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.appointments-list {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.appointments-list ul {
+    margin: 0.25rem 0 0 0;
+    padding-left: 1rem;
+}
+
+.date-picker {
+    width: 100%;
+}
+
+.slot-group {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+@media (max-width: 768px) {
+    .slots-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+
+// Date picker functionality
+document.getElementById('datePicker').addEventListener('change', function() {
+    const doctorId = {{ doctor.id }};
+    const selectedDate = this.value;
+    window.location.href = `/admin/manage_date_slots/${doctorId}?date=${selectedDate}`;
+});
+
+// Previous dates dropdown
+const previousDatesSelect = document.getElementById('previous-dates');
+if (previousDatesSelect) {
+    previousDatesSelect.addEventListener('change', function() {
+        if (this.value) {
+            const doctorId = {{ doctor.id }};
+            window.location.href = `/admin/manage_date_slots/${doctorId}?date=${this.value}`;
+        }
+    });
+}
+
+// Add new slot
+document.getElementById('add-slot').addEventListener('click', function() {
+    const slotsContainer = document.getElementById('slots-container');
+    const newSlot = document.createElement('div');
+    newSlot.className = 'slot-group mb-4';
+    newSlot.innerHTML = `
+        <div class="row">
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-control slot-start-time" name="start_time[]" required>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="mb-3">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-control slot-end-time" name="end_time[]" required>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="mb-3">
+                    <label class="form-label">&nbsp;</label>
+                    <button type="button" class="btn btn-danger w-100 remove-slot">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    slotsContainer.appendChild(newSlot);
+    
+    // Add remove functionality to the new slot
+    addRemoveSlotListener(newSlot.querySelector('.remove-slot'));
+    
+    // Show all remove buttons if we have more than one slot
+    if (slotsContainer.querySelectorAll('.slot-group').length > 1) {
+        slotsContainer.querySelectorAll('.remove-slot').forEach(button => {
+            button.style.display = 'block';
+        });
+    }
+});
+
+// Helper function to add remove slot functionality
+function addRemoveSlotListener(button) {
+    button.addEventListener('click', function() {
+        const slotsContainer = document.getElementById('slots-container');
+        const slotGroups = slotsContainer.querySelectorAll('.slot-group');
+        
+        if (slotGroups.length > 1) {
+            this.closest('.slot-group').remove();
+            
+            // Hide the remove button if only one slot remains
+            if (slotGroups.length === 2) {
+                slotsContainer.querySelector('.remove-slot').style.display = 'none';
+            }
+        }
+    });
+}
+
+// Add remove functionality to existing slot buttons
+document.querySelectorAll('.remove-slot').forEach(button => {
+    addRemoveSlotListener(button);
+});
+
+// Show all remove buttons if we have more than one slot initially
+if (document.querySelectorAll('.slot-group').length > 1) {
+    document.querySelectorAll('.remove-slot').forEach(button => {
+        button.style.display = 'block';
+    });
+}
+</script>
+{% endblock %} 

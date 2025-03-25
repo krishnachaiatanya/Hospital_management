@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}View All Patients - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button">Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="patients-page">
+        <h1 class="text-center mb-4">Patients with Completed Appointments</h1>
+        
+        <!-- Search Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{{ url_for('view_all_patients') }}" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="patient_search" class="form-label">Patient Name</label>
+                        <input type="text" class="form-control" id="patient_search" name="patient_name" value="{{ request.args.get('patient_name', '') }}" placeholder="Search by patient name...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="doctor_search" class="form-label">Doctor Name</label>
+                        <input type="text" class="form-control" id="doctor_search" name="doctor_name" value="{{ request.args.get('doctor_name', '') }}" placeholder="Search by doctor name...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="department_search" class="form-label">Department</label>
+                        <select class="form-select" id="department_search" name="department">
+                            <option value="">All Departments</option>
+                            {% for spec in specializations %}
+                            <option value="{{ spec }}" {% if request.args.get('department') == spec %}selected{% endif %}>{{ spec }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="date_search" class="form-label">Appointment Date</label>
+                        <input type="date" class="form-control" id="date_search" name="date" value="{{ request.args.get('date', '') }}">
+                    </div>
+                    <div class="col-md-12 d-flex justify-content-center mt-3">
+                        <button type="submit" class="btn btn-primary me-2">Search</button>
+                        <a href="{{ url_for('view_all_patients') }}" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Patient List -->
+        <div class="row">
+            {% if patients %}
+                {% for patient in patients %}
+                <div class="col-lg-6 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">
+                                {% if patient.display_name %}
+                                    {{ patient.display_name }}
+                                {% else %}
+                                    {{ patient.username }}
+                                {% endif %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Contact:</strong> {{ patient.phone_number }}</p>
+                                    <p><strong>Email:</strong> {% if patient.email and patient.email != 'None' and not patient.email.endswith('@placeholder.com') %}{{ patient.email }}{% endif %}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Total Completed Appointments:</strong> {{ patient.completed_appointments|length }}</p>
+                                    <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-edit"></i> Edit Patient
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <h6>Completed Appointments</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Doctor</th>
+                                                <th>Department</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for appointment in patient.completed_appointments %}
+                                            <tr>
+                                                <td>{{ appointment.date.strftime('%Y-%m-%d') }} {{ appointment.time }}</td>
+                                                <td>{{ appointment.doctor.name }}</td>
+                                                <td>
+                                                    {% if appointment.department %}
+                                                        {{ appointment.department }}
+                                                    {% else %}
+                                                        {{ appointment.doctor.specialization }}
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No patients found with completed appointments{% if request.args.get('patient_name') or request.args.get('doctor_name') or request.args.get('department') %} matching your search criteria{% endif %}.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+
+<style>
+.patients-page .card-header {
+    font-weight: 500;
+}
+.patients-page table {
+    font-size: 0.9rem;
+}
+</style>
+{% endblock %} 

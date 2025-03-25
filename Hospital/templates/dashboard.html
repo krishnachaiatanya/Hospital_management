@@ -1,0 +1,290 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Dashboard - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('dashboard') }}" class="nav-button login-btn active">Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Welcome, {{ current_user.username }}!</h5>
+                    <p class="card-text">Manage your appointments and view your medical history.</p>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newAppointmentModal">
+                        <i class="fas fa-calendar-plus"></i> Book New Appointment
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Doctor Search Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Find a Doctor</h5>
+                </div>
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('dashboard') }}" class="search-form">
+                        <div class="mb-3">
+                            <label for="nameSearch" class="form-label">Doctor Name</label>
+                            <input type="text" class="form-control" id="nameSearch" name="name" value="{{ request.args.get('name', '') }}" placeholder="Search by name...">
+                        </div>
+                        <div class="mb-3">
+                            <label for="specializationSearch" class="form-label">Specialization</label>
+                            <select class="form-select" id="specializationSearch" name="specialization">
+                                <option value="">All Specializations</option>
+                                {% for spec in specializations %}
+                                <option value="{{ spec }}" {% if request.args.get('specialization') == spec %}selected{% endif %}>{{ spec }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-redo"></i> Reset
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Your Appointments</h5>
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Time</th>
+                                        <th>Doctor</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                    <tr>
+                                        <td>{{ appointment.date.strftime('%d-%m-%Y') }}</td>
+                                        <td>{{ appointment.time }}</td>
+                                        <td>{{ appointment.doctor.name }}</td>
+                                        <td>
+                                            <span class="status-badge {{ appointment.status }}">
+                                                {{ appointment.status }}
+                                            </span>
+                                        </td>
+                                        <td class="table-actions">
+                                            {% if appointment.status != 'completed' %}
+                                            <a href="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}" 
+                                            class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Are you sure you want to cancel this appointment?');">
+                                                <i class="fas fa-times"></i> Cancel
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-calendar-times fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">No appointments found.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Doctors List -->
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">Available Doctors</h5>
+                    {% if request.args.get('name') or request.args.get('specialization') %}
+                        <p class="text-muted">Showing filtered results</p>
+                    {% endif %}
+                    
+                    {% if doctors %}
+                        <div class="row g-3">
+                            {% for doctor in doctors %}
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ doctor.name }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ doctor.specialization }}</h6>
+                                        <p class="card-text">
+                                            <strong>Qualifications:</strong> {{ doctor.qualifications }}<br>
+                                            <strong>Experience:</strong> {{ doctor.years_of_experience }} years
+                                        </p>
+                                        <button class="btn btn-primary btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#newAppointmentModal"
+                                                onclick="preSelectDoctor({{ doctor.id }})">
+                                            <i class="fas fa-calendar-plus"></i> Book Appointment
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-user-md fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">No doctors found matching your criteria.</p>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Appointment Modal -->
+    <div class="modal fade" id="newAppointmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-calendar-plus"></i> Book New Appointment</h5>
+                    <button type="button" class="btn-close bg-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="appointmentForm" method="POST" action="{{ url_for('book_appointment') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="doctor" class="form-label fw-bold">Select Doctor</label>
+                                <select class="form-select form-select-lg" id="doctor" name="doctor_id" required>
+                                    <option value="">Choose a doctor...</option>
+                                    {% for doctor in doctors %}
+                                    <option value="{{ doctor.id }}">{{ doctor.name }} - {{ doctor.specialization }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="date" class="form-label fw-bold">Appointment Date</label>
+                                <input type="date" class="form-control form-control-lg" id="date" name="date" 
+                                    min="{{ now.strftime('%Y-%m-%d') }}" required>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="time" class="form-label fw-bold">Appointment Time</label>
+                            <select class="form-select form-select-lg" id="time" name="time" required disabled>
+                                <option value="">Select a date first...</option>
+                            </select>
+                            <div class="form-text mt-2 text-muted">
+                                <i class="fas fa-info-circle"></i> Available time slots will appear after selecting a date.
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patient_name" class="form-label fw-bold">Patient Name</label>
+                                <input type="text" class="form-control form-control-lg" id="patient_name" name="patient_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="patient_age" class="form-label fw-bold">Patient Age</label>
+                                <input type="number" class="form-control form-control-lg" id="patient_age" name="patient_age" min="1" max="120" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="patient_gender" class="form-label fw-bold">Gender</label>
+                                <select class="form-select form-select-lg" id="patient_gender" name="patient_gender" required>
+                                    <option value="">Select gender...</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label fw-bold">Department</label>
+                                <select class="form-select form-select-lg" id="department" name="department" required>
+                                    <option value="">Select department...</option>
+                                    {% for spec in specializations %}
+                                    <option value="{{ spec }}">{{ spec }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calendar-check"></i> Book Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+function preSelectDoctor(doctorId) {
+    document.getElementById('doctor').value = doctorId;
+    // Get the doctor's specialization and set it as the department
+    const doctorOption = document.querySelector(`#doctor option[value="${doctorId}"]`);
+    if (doctorOption) {
+        const specialization = doctorOption.text.split(' - ')[1];
+        document.getElementById('department').value = specialization;
+    }
+}
+
+// Function to load available time slots
+function loadAvailableSlots() {
+    const doctorId = document.getElementById('doctor').value;
+    const date = document.getElementById('date').value;
+    const timeSelect = document.getElementById('time');
+    
+    if (!doctorId || !date) {
+        timeSelect.disabled = true;
+        timeSelect.innerHTML = '<option value="">Select a date first...</option>';
+        return;
+    }
+    
+    // Enable the time select
+    timeSelect.disabled = false;
+    
+    // Fetch available slots from the server
+    fetch(`/get_available_slots/${doctorId}/${date}`)
+        .then(response => response.json())
+        .then(slots => {
+            timeSelect.innerHTML = '<option value="">Select time...</option>';
+            slots.forEach(slot => {
+                if (slot.available) {
+                    const option = document.createElement('option');
+                    option.value = slot.start_time;
+                    option.textContent = `${slot.start_time} - ${slot.end_time}`;
+                    timeSelect.appendChild(option);
+                }
+            });
+        })
+        .catch(error => {
+            console.error('Error loading slots:', error);
+            timeSelect.innerHTML = '<option value="">Error loading slots...</option>';
+        });
+}
+
+// Add event listeners
+document.getElementById('doctor').addEventListener('change', loadAvailableSlots);
+document.getElementById('date').addEventListener('change', loadAvailableSlots);
+</script>
+{% endblock %} 

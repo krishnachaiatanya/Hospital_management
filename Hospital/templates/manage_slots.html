@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Doctor Slots - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button login-btn">Back to Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="manage-slots-form">
+        <h1 class="text-center mb-4">Manage Slots for {{ doctor.name }}</h1>
+        <p class="text-center text-muted mb-4">Set available time slots for each day of the week</p>
+        
+        <form method="POST" class="needs-validation" novalidate>
+            <div class="slots-container">
+                {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+                {% for day in range(5) %}
+                <div class="slot-card">
+                    <h3>{{ days[day] }}</h3>
+                    <div class="slot-inputs">
+                        <div class="mb-3">
+                            <label class="form-label">Start Time</label>
+                            <input type="time" class="form-control" name="start_time_{{ day }}" 
+                                   value="{{ doctor.slots[day].start_time if doctor.slots else '09:00' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">End Time</label>
+                            <input type="time" class="form-control" name="end_time_{{ day }}"
+                                   value="{{ doctor.slots[day].end_time if doctor.slots else '17:00' }}" required>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" name="is_available_{{ day }}"
+                                   {% if not doctor.slots or doctor.slots[day].is_available %}checked{% endif %}>
+                            <label class="form-check-label">Available</label>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">Update Slots</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 

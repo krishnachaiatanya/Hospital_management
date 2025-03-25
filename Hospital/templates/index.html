@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('dashboard') }}" class="nav-button login-btn">Dashboard</a>
+            <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}" class="nav-button login-btn">Login</a>
+            <a href="{{ url_for('register') }}" class="nav-button register-btn">Register</a>
+        {% endif %}
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="welcome-section text-center mb-5">
+        <h1 class="display-3 fw-bold text-primary mb-4">Welcome to LK Hospital</h1>
+        <p class="lead text-muted mb-5">Your trusted healthcare partner for quality medical services</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-wrapper">
+                    <i class="fas fa-ambulance"></i>
+                </div>
+                <h3>24/7 Emergency Care</h3>
+                <p>Round-the-clock medical assistance for all your emergency needs.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-wrapper">
+                    <i class="fas fa-user-md"></i>
+                </div>
+                <h3>Expert Doctors</h3>
+                <p>Our team of experienced healthcare professionals is here to serve you.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="feature-card">
+                <div class="icon-wrapper">
+                    <i class="fas fa-hospital"></i>
+                </div>
+                <h3>Modern Facilities</h3>
+                <p>State-of-the-art medical equipment and comfortable patient care.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cta-section text-center mt-5">
+        <h2 class="mb-4">Ready to Get Started?</h2>
+        <p class="mb-4">Book your appointment today and experience world-class healthcare.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg">Register Now</a>
+        {% else %}
+            <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg">Book Appointment</a>
+        {% endif %}
+    </div>
+</main>
+{% endblock %} 

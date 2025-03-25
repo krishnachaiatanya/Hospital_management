@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}All Doctors - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button">Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="doctors-page">
+        <h1 class="text-center mb-5">All Doctors</h1>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Manage Doctors</h2>
+            <a href="{{ url_for('add_doctor') }}" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add New Doctor
+            </a>
+        </div>
+        
+        <!-- Search Filter Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form id="doctorSearchForm" class="row g-3" method="GET" action="{{ url_for('view_all_doctors') }}">
+                    <div class="col-md-5">
+                        <label for="nameSearch" class="form-label">Doctor Name</label>
+                        <input type="text" class="form-control" id="nameSearch" name="name" value="{{ request.args.get('name', '') }}" placeholder="Search by name...">
+                    </div>
+                    <div class="col-md-5">
+                        <label for="specializationSearch" class="form-label">Specialization</label>
+                        <select class="form-select" id="specializationSearch" name="specialization">
+                            <option value="">All Specializations</option>
+                            {% for spec in specializations %}
+                            <option value="{{ spec }}" {% if request.args.get('specialization') == spec %}selected{% endif %}>{{ spec }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">Search</button>
+                        <a href="{{ url_for('view_all_doctors') }}" class="btn btn-secondary">Reset</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Doctors List -->
+        <div class="row g-4">
+            {% if doctors %}
+                {% for doctor in doctors %}
+                <div class="col-md-4">
+                    <div class="doctor-card">
+                        <div class="doctor-icon">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                        <h3>{{ doctor.name }}</h3>
+                        <p class="specialization">{{ doctor.specialization }}</p>
+                        <p class="qualifications">{{ doctor.qualifications }}</p>
+                        <p class="experience">{{ doctor.years_of_experience }} years of experience</p>
+                        <p class="appointments">Appointments: {{ doctor.appointments|length }}</p>
+                        <div class="doctor-actions">
+                            <a href="{{ url_for('manage_date_slots', doctor_id=doctor.id) }}" class="btn btn-sm btn-success me-2" data-bs-toggle="tooltip" title="Manage Date Slots">
+                                <i class="fas fa-calendar-day"></i>
+                            </a>
+                            <button class="btn btn-sm btn-primary me-2" onclick="editDoctor({{ doctor.id }})" data-bs-toggle="tooltip" title="Edit Doctor">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteDoctor({{ doctor.id }})" data-bs-toggle="tooltip" title="Delete Doctor">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No doctors found{% if request.args.get('name') or request.args.get('specialization') %} matching your search criteria{% endif %}.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="mt-4">
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+</main>
+
+{% block scripts %}
+<script>
+    function editDoctor(doctorId) {
+        window.location.href = '/edit_doctor/' + doctorId;
+    }
+    
+    function deleteDoctor(doctorId) {
+        if (confirm('Are you sure you want to delete this doctor? This action cannot be undone.')) {
+            window.location.href = '/delete_doctor/' + doctorId;
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %} 

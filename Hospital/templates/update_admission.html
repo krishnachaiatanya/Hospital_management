@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Update Admission - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button">Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="update-admission">
+        <h1 class="text-center mb-4">Update Admission</h1>
+        
+        <div class="card mb-5">
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('update_admission', admission_id=admitted_patient.id) }}">
+                    <!-- Personal Information Section -->
+                    <div class="row mb-4">
+                        <h4 class="mb-3">Personal Information</h4>
+                        <div class="col-md-6 mb-3">
+                            <label for="patient_name" class="form-label">Patient Full Name*</label>
+                            <input type="text" class="form-control" id="patient_name" name="patient_name" value="{{ admitted_patient.patient_name }}" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="patient_age" class="form-label">Age*</label>
+                            <input type="number" class="form-control" id="patient_age" name="patient_age" min="0" max="150" value="{{ admitted_patient.patient_age }}" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="patient_gender" class="form-label">Gender*</label>
+                            <select class="form-select" id="patient_gender" name="patient_gender" required>
+                                <option value="">Select gender</option>
+                                <option value="Male" {% if admitted_patient.patient_gender == 'Male' %}selected{% endif %}>Male</option>
+                                <option value="Female" {% if admitted_patient.patient_gender == 'Female' %}selected{% endif %}>Female</option>
+                                <option value="Other" {% if admitted_patient.patient_gender == 'Other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="patient_phone" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="patient_phone" name="patient_phone" value="{{ admitted_patient.phone_number }}" pattern="[0-9]{10}" title="Please enter a 10-digit phone number">
+                            <div class="form-text">Enter 10-digit phone number without spaces or dashes.</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Admission Details Section -->
+                    <div class="row mb-4">
+                        <h4 class="mb-3">Admission Details</h4>
+                        <div class="col-md-6 mb-3">
+                            <label for="room_number" class="form-label">Room Number*</label>
+                            <select class="form-select" id="room_number" name="room_number" required>
+                                {% for room_number, capacity in room_capacities.items() %}
+                                    {% set occupancy = room_counts.get(room_number, 0) %}
+                                    {% set is_full = occupancy >= capacity and room_number != admitted_patient.room_number %}
+                                    <option value="{{ room_number }}" 
+                                            {% if room_number == admitted_patient.room_number %}selected{% endif %}
+                                            {% if is_full %}disabled{% endif %}>
+                                        {{ room_number }} - {{ occupancy }}/{{ capacity }} patients
+                                        {% if room_number == admitted_patient.room_number %}(Current){% endif %}
+                                        {% if is_full %}(FULL){% endif %}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">
+                                <small>Room capacity shown as current/total patients</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="admission_date" class="form-label">Admission Date*</label>
+                            <input type="date" class="form-control" id="admission_date" name="admission_date" value="{{ admitted_patient.admission_date.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="doctor_id" class="form-label">Attending Doctor*</label>
+                            <select class="form-select" id="doctor_id" name="doctor_id" required>
+                                <option value="">Select doctor</option>
+                                {% for doctor in doctors %}
+                                <option value="{{ doctor.id }}" {% if doctor.id == admitted_patient.doctor_id %}selected{% endif %}>{{ doctor.name }} ({{ doctor.specialization }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="discharge_date" class="form-label">Discharge Date{% if admitted_patient.status == 'admitted' %} (leave blank if still admitted){% endif %}</label>
+                            <input type="date" class="form-control" id="discharge_date" name="discharge_date" value="{{ admitted_patient.discharge_date.strftime('%Y-%m-%d') if admitted_patient.discharge_date else '' }}">
+                        </div>
+                    </div>
+                    
+                    <!-- Medical Information Section -->
+                    <div class="row mb-4">
+                        <h4 class="mb-3">Medical Information</h4>
+                        <div class="col-md-12 mb-3">
+                            <label for="diagnosis" class="form-label">Diagnosis</label>
+                            <input type="text" class="form-control" id="diagnosis" name="diagnosis" value="{{ admitted_patient.diagnosis or '' }}">
+                        </div>
+                        <div class="col-md-12 mb-3">
+                            <label for="notes" class="form-label">Additional Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ admitted_patient.notes or '' }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('view_admitted_patients') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Update Admission</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% block scripts %}
+<script>
+    // Add any custom validation or form handling here
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('patient_phone').addEventListener('input', function(e) {
+            // Automatically remove non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            // Limit to 10 digits
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %} 

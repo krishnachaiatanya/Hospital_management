@@ -1,0 +1,217 @@
+/* Standardized Button Styles for Hospital Dashboard */
+
+/* Primary Action Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #2980b9, #2c3e50);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Success Buttons */
+.btn-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #27ae60, #1e8449);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-success:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Secondary/Cancel Buttons */
+.btn-secondary {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-secondary:hover {
+    background: linear-gradient(135deg, #7f8c8d, #6c7a7a);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Danger Buttons */
+.btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    color: white;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-danger:active {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Size Variations */
+.btn-lg {
+    padding: 0.8rem 2rem;
+    font-size: 1rem;
+    border-radius: 10px;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+}
+
+/* Button with Icons */
+.btn i {
+    margin-right: 0.5rem;
+}
+
+/* Dashboard Action Buttons Container */
+.dashboard-actions {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+/* Search Form Buttons */
+.search-form .btn {
+    min-width: 100px;
+}
+
+/* Table Action Buttons */
+.table-actions .btn {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+/* Modal Buttons Styling */
+.modal .btn {
+    min-width: 120px;
+    font-size: 0.9rem;
+    padding: 0.6rem 1.5rem;
+}
+
+.modal .d-grid .btn {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+.modal .btn-close {
+    box-shadow: none;
+    opacity: 0.6;
+    transition: opacity 0.3s ease;
+}
+
+.modal .btn-close:hover {
+    opacity: 1;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Popup Confirmation Buttons */
+.popup-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.popup-buttons .btn {
+    min-width: 130px;
+    padding: 0.6rem 1.5rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.7rem 1.5rem;
+    }
+    
+    .btn-sm {
+        padding: 0.3rem 0.6rem;
+    }
+    
+    .dashboard-actions {
+        flex-direction: column;
+    }
+    
+    .dashboard-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .modal .btn {
+        min-width: 100px;
+        padding: 0.5rem 1rem;
+    }
+    
+    .popup-buttons {
+        flex-direction: column;
+    }
+    
+    .popup-buttons .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+} 

@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+
+{% block title %}Book Appointment - Admin{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button">Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Book New Appointment</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>{{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+                    <form method="POST" class="needs-validation" novalidate>
+                        <h5 class="card-title mb-3 text-primary"><i class="fas fa-user me-2"></i>Patient Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="patient_name" name="patient_name" required>
+                                    <label for="patient_name">Patient Name</label>
+                                    <div class="invalid-feedback">Please enter the patient name.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="number" class="form-control" id="patient_age" name="patient_age" min="1" max="120" required>
+                                    <label for="patient_age">Patient Age</label>
+                                    <div class="invalid-feedback">Please enter a valid age (1-120).</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="tel" class="form-control" id="patient_phone" name="patient_phone" pattern="[0-9]{10}" required>
+                                    <label for="patient_phone">Phone Number</label>
+                                    <div class="invalid-feedback">Please enter a valid 10-digit phone number.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="patient_gender" name="patient_gender" required>
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <label for="patient_gender">Gender</label>
+                                    <div class="invalid-feedback">Please select a gender.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="form-floating mb-3">
+                                    <input type="email" class="form-control" id="patient_email" name="patient_email">
+                                    <label for="patient_email">Patient Email (Optional)</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        <h5 class="card-title mb-3 text-primary"><i class="fas fa-calendar-alt me-2"></i>Appointment Details</h5>
+                        
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="" selected disabled>Select Department</option>
+                                {% for spec in specializations %}
+                                <option value="{{ spec }}">{{ spec }}</option>
+                                {% endfor %}
+                            </select>
+                            <label for="department">Department/Specialization</label>
+                            <div class="invalid-feedback">Please select a department.</div>
+                        </div>
+                        
+                        <div class="form-floating mb-3">
+                            <select class="form-select" id="doctor_id" name="doctor_id" required disabled>
+                                <option value="">Select Department First</option>
+                            </select>
+                            <label for="doctor_id">Doctor</label>
+                            <div class="invalid-feedback">Please select a doctor.</div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input type="date" class="form-control" id="date" name="date" 
+                                           min="{{ now.strftime('%Y-%m-%d') }}" required>
+                                    <label for="date">Appointment Date</label>
+                                    <div class="invalid-feedback">Please select a date.</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <select class="form-select" id="time" name="time" required disabled>
+                                        <option value="">Select Date First</option>
+                                    </select>
+                                    <label for="time">Appointment Time</label>
+                                    <div class="invalid-feedback">Please select a time.</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="popup-buttons">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-calendar-check"></i> Book Appointment
+                            </button>
+                            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+// Form validation
+(function () {
+    'use strict';
+    var forms = document.querySelectorAll('.needs-validation');
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+})();
+
+document.addEventListener('DOMContentLoaded', function() {
+    const departmentSelect = document.getElementById('department');
+    const doctorSelect = document.getElementById('doctor_id');
+    const dateInput = document.getElementById('date');
+    const timeSelect = document.getElementById('time');
+    
+    // Phone number input validation
+    const phoneInput = document.getElementById('patient_phone');
+    phoneInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+    });
+    
+    // When department changes, update doctors dropdown
+    departmentSelect.addEventListener('change', async function() {
+        const department = this.value;
+        
+        if (department) {
+            try {
+                const response = await fetch(`/get_doctors_by_department/${department}`);
+                const doctors = await response.json();
+                
+                doctorSelect.innerHTML = '<option value="">Select a doctor</option>';
+                doctors.forEach(doctor => {
+                    doctorSelect.innerHTML += `<option value="${doctor.id}">${doctor.name}</option>`;
+                });
+                doctorSelect.disabled = false;
+            } catch (error) {
+                console.error('Error fetching doctors:', error);
+                doctorSelect.innerHTML = '<option value="">Error loading doctors</option>';
+                doctorSelect.disabled = true;
+            }
+        } else {
+            doctorSelect.innerHTML = '<option value="">Select Department First</option>';
+            doctorSelect.disabled = true;
+        }
+        
+        // Reset subsequent fields
+        dateInput.value = '';
+        timeSelect.innerHTML = '<option value="">Select a date first</option>';
+        timeSelect.disabled = true;
+    });
+    
+    // When date changes, update available time slots
+    dateInput.addEventListener('change', async function() {
+        const doctorId = doctorSelect.value;
+        const date = this.value;
+        
+        if (doctorId && date) {
+            try {
+                const response = await fetch(`/get_available_slots/${doctorId}/${date}`);
+                const slots = await response.json();
+                
+                timeSelect.innerHTML = '<option value="">Select a time</option>';
+                if (slots.length === 0) {
+                    timeSelect.innerHTML = '<option value="">No available slots</option>';
+                    timeSelect.disabled = true;
+                } else {
+                    slots.forEach(slot => {
+                        if (slot.available) {
+                            timeSelect.innerHTML += `<option value="${slot.start_time}">${slot.start_time} - ${slot.end_time}</option>`;
+                        }
+                    });
+                    timeSelect.disabled = false;
+                }
+            } catch (error) {
+                console.error('Error fetching available slots:', error);
+                timeSelect.innerHTML = '<option value="">Error loading slots</option>';
+                timeSelect.disabled = true;
+            }
+        } else {
+            timeSelect.innerHTML = '<option value="">Select a doctor and date first</option>';
+            timeSelect.disabled = true;
+        }
+    });
+    
+    // Update available times when doctor changes
+    doctorSelect.addEventListener('change', function() {
+        dateInput.value = ''; // Reset date
+        timeSelect.innerHTML = '<option value="">Select a date first</option>';
+        timeSelect.disabled = true;
+    });
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Doctor - LK Hospital{% endblock %}
+
+{% block content %}
+<header class="header">
+    <div class="hospital-logo">
+        <img src="{{ url_for('static', filename='images/hospital-logo.png') }}" alt="LK Hospital Logo">
+        <span class="hospital-name">LK Hospital</span>
+    </div>
+    <div class="nav-buttons">
+        <a href="{{ url_for('admin_dashboard') }}" class="nav-button login-btn">Back to Dashboard</a>
+        <a href="{{ url_for('logout') }}" class="nav-button register-btn">Logout</a>
+    </div>
+</header>
+
+<main class="container mt-5">
+    <div class="add-doctor-form">
+        <h1 class="text-center mb-4">Add New Doctor</h1>
+        
+        <form method="POST" class="needs-validation" novalidate>
+            <div class="mb-3">
+                <label for="name" class="form-label">Doctor's Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+                <div class="invalid-feedback">
+                    Please enter the doctor's name.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="specialization" class="form-label">Specialization</label>
+                <input type="text" class="form-control" id="specialization" name="specialization" required>
+                <div class="invalid-feedback">
+                    Please enter the doctor's specialization.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="qualifications" class="form-label">Qualifications</label>
+                <input type="text" class="form-control" id="qualifications" name="qualifications" 
+                       placeholder="e.g., MBBS, MD, DM" required>
+                <div class="invalid-feedback">
+                    Please enter the doctor's qualifications.
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="years_of_experience" class="form-label">Years of Experience</label>
+                <input type="number" class="form-control" id="years_of_experience" name="years_of_experience" 
+                       value="15" min="0" max="50" required>
+                <div class="invalid-feedback">
+                    Please enter valid years of experience.
+                </div>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">Add Doctor</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<script>
+// Form validation
+(function () {
+    'use strict'
+    var forms = document.querySelectorAll('.needs-validation')
+    Array.prototype.slice.call(forms).forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+                event.preventDefault()
+                event.stopPropagation()
+            }
+            form.classList.add('was-validated')
+        }, false)
+    })
+})()
+</script>
+{% endblock %} 
